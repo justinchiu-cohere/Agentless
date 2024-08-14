@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from agentless.util.api_requests import create_chatgpt_config, request_chatgpt_engine
+from agentless.util.api_requests import (
+    create_chatgpt_config,
+    request_chatgpt_engine,
+    create_cohere_config,
+    request_cohere_engine,
+)
 
 
 class DecoderBase(ABC):
@@ -139,6 +144,68 @@ class DeepSeekChatDecoder(DecoderBase):
         return False
 
 
+class CohereChatDecoder(DecoderBase):
+    def __init__(self, name: str, logger, **kwargs) -> None:
+        super().__init__(name, logger, **kwargs)
+
+    def codegen(self, message: str, num_samples: int = 1) -> List[dict]:
+        if self.temperature == 0:
+            assert num_samples == 1
+        batch_size = min(self.batch_size, num_samples)
+
+        config = create_cohere_config(
+            message=message,
+            max_tokens=self.max_new_tokens,
+            temperature=self.temperature,
+            batch_size=1,
+            model=self.name,
+        )
+
+        responses = []
+        completion_tokens = 0
+        prompt_tokens = 0
+        for n in range(batch_size):
+            ret = request_cohere_engine(config, self.logger)
+            if ret:
+                responses.append(ret.text)
+                completion_tokens += ret.meta.tokens.output_tokens
+                prompt_tokens += ret.meta.tokens.input_tokens
+            else:
+                responses.append("")
+
+        # The nice thing is, when we generate multiple samples from the same input (message),
+        # the input tokens are only charged once according to openai API.
+        # Therefore, we assume the request cost is only counted for the first sample.
+        # More specifically, the `prompt_tokens` is for one input message,
+        # and the `completion_tokens` is the sum of all returned completions.
+        # Therefore, for the second and later samples, the cost is zero.
+        # 
+        # FOR COHERE WE SUM OVER ALL PROMPT TOKENS AND COMPLETION TOKENS
+        trajs = [
+            {
+                "response": responses[0],
+                "usage": {
+                    "completion_tokens": completion_tokens,
+                    "prompt_tokens": prompt_tokens,
+                },
+            }
+        ]
+        for response in responses[1:]:
+            trajs.append(
+                {
+                    "response": response,
+                    "usage": {
+                        "completion_tokens": 0,
+                        "prompt_tokens": 0,
+                    },
+                }
+            )
+        return trajs
+
+    def is_direct_completion(self) -> bool:
+        return False
+
+
 def make_model(
     model: str,
     backend: str,
@@ -149,6 +216,14 @@ def make_model(
 ):
     if backend == "openai":
         return OpenAIChatDecoder(
+            name=model,
+            logger=logger,
+            batch_size=batch_size,
+            max_new_tokens=max_tokens,
+            temperature=temperature,
+        )
+    elif backend == "cohere":
+        return CohereChatDecoder(
             name=model,
             logger=logger,
             batch_size=batch_size,

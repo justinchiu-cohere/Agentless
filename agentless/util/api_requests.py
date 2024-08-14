@@ -1,8 +1,10 @@
+import os
 import time
 from typing import Dict, Union
 
 import openai
 import tiktoken
+import cohere
 
 
 def num_tokens_from_messages(message, model="gpt-3.5-turbo-0301"):
@@ -148,3 +150,63 @@ def request_anthropic_engine(client, config, logger, max_retries=40, timeout=100
         retries += 1
 
     return ret
+
+
+def create_cohere_config(
+    message: Union[str, list],
+    max_tokens: int,
+    temperature: float = 1,
+    batch_size: int = 1,
+    system_message: str = "You are a helpful assistant.",
+    model: str = "command-r-plus",
+) -> Dict:
+    assert batch_size == 1
+    if isinstance(message, list):
+        raise NotImplementedError
+        config = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "preamble": system_message,
+            "message": message[-1],
+            "chat_history": message[:-1],
+            "n": batch_size,
+        }
+    else:
+        config = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "preamble": system_message,
+            "message": message,
+            "n": batch_size,
+        }
+    return config
+
+
+def request_cohere_engine(config, logger, base_url=None, max_retries=40, timeout=100):
+    ret = None
+    retries = 0
+
+    client = cohere.Client(base_url="https://stg.api.cohere.ai", api_key=os.getenv("COHERE_STAGING_API_KEY"))
+
+    batch_size = config.pop("n", 1)
+    ret = None
+    while retries < max_retries:
+        try:
+            # Attempt to get the completion
+            logger.info("Creating API request")
+
+            ret = client.chat(**config)
+
+        except cohere.core.ApiError as e:
+            logger.info(e.message)
+            logger.info(e.http_status)
+            logger.info(e.headers)
+            time.sleep(1)
+
+        retries += 1
+
+    logger.info(f"API response {ret}")
+    return ret
+
