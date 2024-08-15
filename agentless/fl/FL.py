@@ -101,6 +101,8 @@ The locations can be specified as class names, function or method names, or exac
 ###
 
 Please provide the class name, function or method name, or the exact line numbers that need to be edited.
+
+Here are examples of the output format. Be sure wrap the output with backticks ```.
 ### Examples:
 ```
 full_path1/file1.py
@@ -133,6 +135,7 @@ The locations can be specified as class, method, or function names that require 
 ###
 
 Please provide the class, method, or function names that need to be edited.
+Here are examples of the output format. Be sure wrap the output with backticks ```.
 ### Examples:
 ```
 full_path1/file1.py
@@ -162,6 +165,7 @@ Provide a thorough set of locations that need inspection or editing to fix the p
 ###
 
 Please provide locations as either the class or the function name.
+Here are examples of the output format. Be sure wrap the output with backticks ```.
 ### Examples:
 ```
 full_path1/file1.py
@@ -192,6 +196,7 @@ For each location you provide, either give the name of the class, the name of a 
 Please provide the complete set of locations as either a class name, a function name, or a variable name.
 Note that if you include a class, you do not need to list its specific methods.
 You can include either the entire class or don't include the class name and instead include specific methods in the class.
+Here are examples of the output format. Be sure wrap the output with backticks ```.
 ### Examples:
 ```
 full_path1/file1.py
