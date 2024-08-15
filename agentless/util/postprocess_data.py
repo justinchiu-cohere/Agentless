@@ -406,6 +406,7 @@ def extract_locs_for_files(locs, file_names):
                     results[current_file_name].append(line)
                 else:
                     pass
+    import pdb; pdb.set_trace()
     return [["\n".join(results[fn])] for fn in file_names]
 
 

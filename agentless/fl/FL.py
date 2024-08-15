@@ -238,6 +238,7 @@ Return just the locations.
     def localize(
         self, top_n=1, mock=False, match_partial_paths=False
     ) -> tuple[list, list, list, any]:
+        self.logger.debug("Entering function localize")
         # lazy import, not sure if this is actually better?
         from agentless.util.api_requests import num_tokens_from_messages
         from agentless.util.model import make_model
@@ -294,6 +295,8 @@ Return just the locations.
     def localize_function_for_files(
         self, file_names, mock=False
     ) -> tuple[list, dict, dict]:
+        self.logger.debug("Entering function localize_function_for_files")
+
         from agentless.util.api_requests import num_tokens_from_messages
         from agentless.util.model import make_model
 
@@ -363,6 +366,8 @@ Return just the locations.
         return model_found_locs_separated, {"raw_output_loc": raw_output}, traj
 
     def localize_function_from_compressed_files(self, file_names, mock=False):
+        self.logger.debug("Entering function localize_function_from_compressed_files")
+
         from agentless.util.api_requests import num_tokens_from_messages
         from agentless.util.model import make_model
 
@@ -456,6 +461,8 @@ Return just the locations.
         num_samples: int = 1,
         mock=False,
     ):
+        self.logger.debug("Entering function localize_line_from_coarse_function_locs")
+
         from agentless.util.api_requests import num_tokens_from_messages
         from agentless.util.model import make_model
 
