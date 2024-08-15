@@ -193,7 +193,7 @@ def localize(args):
     )
 
     if args.num_threads == 1:
-        for bug in swe_bench_data:
+        for bug in tqdm(swe_bench_data):
             localize_instance(
                 bug, args, swe_bench_data, start_file_locs, existing_instance_ids
             )
@@ -212,7 +212,9 @@ def localize(args):
                 )
                 for bug in swe_bench_data
             ]
-            concurrent.futures.wait(futures)
+            #concurrent.futures.wait(futures)
+            for _ in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+                pass
 
 
 def merge(args):
