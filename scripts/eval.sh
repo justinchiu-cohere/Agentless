@@ -13,7 +13,7 @@ PROJECT_FILE_LOC=$PROJECT_FILE_LOC python agentless/fl/localize.py \
     --temperature 0.8 \
     --num_samples 4 \
     --backend cohere \
-    --num_threads 8 \
+    --num_threads 1 \
     --model command-r-plus-synth
 }
 

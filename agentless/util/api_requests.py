@@ -192,17 +192,19 @@ def request_cohere_engine(config, logger, base_url=None, max_retries=40, timeout
 
     batch_size = config.pop("n", 1)
     ret = None
-    while retries < max_retries:
+    while ret is None and retries < max_retries:
         try:
             # Attempt to get the completion
-            logger.info("Creating API request")
+            logger.info(f"Creating API request: Retry {retries}")
 
             ret = client.chat(**config)
 
-        except cohere.core.ApiError as e:
-            logger.info(e.message)
-            logger.info(e.http_status)
-            logger.info(e.headers)
+        #except cohere.core.ApiError as e:
+        except Exception as e:
+            logger.info(f"Cohere API error: {e}")
+            #logger.info(e.message)
+            #logger.info(e.http_status)
+            #logger.info(e.headers)
             time.sleep(1)
 
         retries += 1

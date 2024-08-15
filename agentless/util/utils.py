@@ -13,8 +13,8 @@ def load_jsonl(filepath):
     Returns:
     A list of dictionaries representing the data in each line of the JSONL file.
     """
-    with open(filepath, "r") as file:
-        return [json.loads(line) for line in file]
+    with open(filepath, "r") as f:
+        return [json.loads(line) for line in f]
 
 
 def write_jsonl(data, filepath):
@@ -25,13 +25,14 @@ def write_jsonl(data, filepath):
     data -- a list of dictionaries to write to the JSONL file
     filepath -- the path to the JSONL file to write
     """
-    with open(filepath, "w") as file:
+    with open(filepath, "w") as f:
         for entry in data:
-            file.write(json.dumps(entry) + "\n")
+            f.write(json.dumps(entry) + "\n")
 
 
 def load_json(filepath):
-    return json.load(open(filepath, "r"))
+    with open(filepath, "r") as f:
+        return json.load(f)
 
 
 def combine_by_instance_id(data):
