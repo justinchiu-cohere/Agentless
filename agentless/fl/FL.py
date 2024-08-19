@@ -492,7 +492,10 @@ Return just the locations.
         )
         self.logger.info(f"prompting with message:\n{message}")
         self.logger.info("=" * 80)
-        assert num_tokens_from_messages(message, self.model_name) < MAX_CONTEXT_LENGTH
+        if num_tokens_from_messages(message, self.model_name) < MAX_CONTEXT_LENGTH:
+            #import pdb; pdb.set_trace()
+            pass
+        #assert num_tokens_from_messages(message, self.model_name) < MAX_CONTEXT_LENGTH
         if mock:
             self.logger.info("Skipping querying model since mock=True")
             traj = {

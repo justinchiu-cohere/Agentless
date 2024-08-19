@@ -184,14 +184,15 @@ def create_cohere_config(
     return config
 
 
-def request_cohere_engine(config, logger, base_url=None, max_retries=40, timeout=100):
+def request_cohere_engine(config, logger, base_url=None, max_retries=200, timeout=100):
     ret = None
     retries = 0
 
-    client = cohere.Client(base_url="https://stg.api.cohere.ai", api_key=os.getenv("COHERE_STAGING_API_KEY"))
+    client = cohere.Client(base_url="https://stg.api.cohere.ai", api_key=os.getenv("COHERE_STAGING_API_KEY"), timeout=20)
 
-    prompt_tokens = num_tokens_from_messages(config["message"], "gpt-4o")
-    logger.info(f"PROMPT has {prompt_tokens} tokens (gpt4o vocab)")
+    prompt = client.tokenize(text=config["message"], model="command-r-plus")
+    logger.info(f"PROMPT has {len(prompt.tokens)} tokens")
+    request_options = cohere.core.RequestOptions(retires=max_retries, timeout_in_seconds=timeout)
 
     batch_size = config.pop("n", 1)
     ret = None
@@ -200,7 +201,7 @@ def request_cohere_engine(config, logger, base_url=None, max_retries=40, timeout
             # Attempt to get the completion
             logger.info(f"Creating API request: Retry {retries}")
 
-            ret = client.chat(**config)
+            ret = client.chat(**config, request_options=request_options)
             logger.info(f"Received response: {retries}")
             logger.info(ret.text)
 
@@ -214,6 +215,7 @@ def request_cohere_engine(config, logger, base_url=None, max_retries=40, timeout
 
         retries += 1
 
-    logger.info(f"API response {ret.text}")
+    if ret is not None:
+        logger.info(f"API response {ret.text}")
     return ret
 
